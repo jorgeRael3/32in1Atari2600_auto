@@ -1,134 +1,74 @@
-function apertaQuadrado()
-  joypad.set({["P1 □"] = true})
-end
-
-function apertaTriangulo()
-  joypad.set({["P1 △"] = true})
-end
-
-function apertaBola()
-  joypad.set({["P1 ○"] = true})
-end
-
-function quadro_salvo()
-  savestate.saveslot(2)
-  savestate.loadslot(1)
-  local num = emu.framecount()
-  savestate.loadslot(2)
-  return num
-end
-
-function esperar(frames)
-  for i = 1, frames do
-    emu.frameadvance()
-  end
-end
-
-function pula_ate_quadro(quadro)
-  esperar(quadro - emu.framecount())
-end
-
-function ciclo_final()
-  local v0 = emu.framecount()
-  while true do
-    gui.text(100, 200, v0)
-    emu.frameadvance()
-  end  
-end
-
-function tiro(num)
-  for i = 1, 26 do
-    joypad.set({["P1 R1"] = true})
-    emu.frameadvance()
-  end
-  for i = 1, 42 * num - 40 do
-    joypad.set({["P1 R1"] = true, ["P1 X"] = true})
-    emu.frameadvance()
-  end
-end
-
-function andar(num)
-  for i = 1, num do
-    joypad.set({["P1 Up"] = true})
-    emu.frameadvance()
-  end
-end
-
-function correr(num)
-  for i = 1, num do
-    joypad.set({["P1 Up"] = true, ["P1 □"] = true})
-    emu.frameadvance()
-  end
-end
-
-function virar_esquerda(num)
-  for i = 1, num do
-    joypad.set({["P1 Left"] = true})
-    emu.frameadvance()
-  end
-end
-
-function virar_direita(num)
-  for i = 1, num do
-    joypad.set({["P1 Right"] = true})
-    emu.frameadvance()
-  end
-end
-
-function correr_virando_direita(num)
-  for i = 1, num do
-    joypad.set({["P1 Right"] = true, ["P1 Up"] = true, ["P1 □"] = true})
-    emu.frameadvance()
-  end
-end
-
-function correr_virando_esquerda(num)
-  for i = 1, num do
-    joypad.set({["P1 Left"] = true, ["P1 Up"] = true, ["P1 □"] = true})
-    emu.frameadvance()
-  end
-end
-
-savestate.loadslot(1)
-if emu.framecount() <= 3426 then
-  pula_ate_quadro(3426)
-  joypad.set({["P1 Left"] = true, ["P1 X"] = true})
-end
-if emu.framecount() <= 3428 then
-  pula_ate_quadro(3428)
-  joypad.set({["P1 X"] = true})
-end
-if emu.framecount() <= 13945 then
-  pula_ate_quadro(13945)
-  correr(154)
-  tiro(1)
-  correr(129)
-  joypad.set({["P1 X"] = true})
-  esperar(1)
-  correr(117)
-  joypad.set({["P1 X"] = true})
-end
 --[[
-Pegou em 20406
-correr_virando_direita(61)
-correr(15)
-correr_virando_direita(48)
-correr(166)
-correr_virando_direita(50)
-correr(21)
-joypad.set({["P1 X"] = true})
-Casos:
-61, 15, 48, 166, 50, 21
-61, 15, 49, 165, 50, 21
-61, 15, 49, 164, 51, 21
-61, 15, 49, 164, 52, 20
-61, 15, 49, 164, 53, 19
-61, 15, 49, 164, 54, 18
-61, 15, 48, 165, 54, 18
+	Responsabilidades da IA
+	1) Determinar qual será o nome de cada função existente.
+	2) Determinar a criação de nova função para remover duplicação de
+	código existente.
+	3) Determinar a criação novas funções para desmembrar uma
+	função que tem múltiplas responsabilidades.
+
+	O que a IA não deve fazer
+	1) Gerar código.
+	2) Escolher o nome para uma função que não foi implementada e nem
+	remove duplicação de código.
 ]]
-pula_ate_quadro(20044)
-esperar(30)
---virar_esquerda(1)
----------------------------------------------------------------------
-savestate.saveslot(3)
-ciclo_final()
+
+function ObterAssinaturaDoJogo(...)
+	assert(#{...} == 0)
+	local v0 = {15272, 59431, 34294, 9276, 42708, 6784, 53050, 17025,
+	519, 4795, 255, 23339, 49404, 16896, 4896, 1349, 10901, 6328,
+	15430, 0, 24640, 65279, 512, 8738, 52224, 257, 6144, 61664, 636,
+	128, 6322, 7710}
+	local v1 = memory.getcurrentmemorydomain()
+	memory.usememorydomain("System Bus")
+	local v2 = memory.read_u16_le(0xF784)
+	memory.usememorydomain(v1)
+	for v3 = 1, 32 do
+		if v2 == v0[v3] then
+			return v3
+		end
+	end
+end
+
+function AlternarBancoAteIndice(indice_jogo, ...)
+	assert(#{...} == 0)
+	assert(type(indice_jogo) == "number")
+	assert(indice_jogo == math.floor(indice_jogo))
+	assert(1 <= indice_jogo)
+	assert(indice_jogo <= 32)
+	client.reboot_core()
+	if indice_jogo >= 2 then
+		joypad.set({["Power"] = true})
+	end
+	for v0 = 1, indice_jogo - 2 do
+		emu.frameadvance()
+		joypad.set({["Power"] = true})
+	end
+end
+
+function ValidarMapeamentoDosJogos(...)
+	assert(#{...} == 0)
+	for v0 = 1, 32 do
+		AlternarBancoAteIndice(v0)
+		if v0 >= 2 then
+			emu.frameadvance()
+		end
+		assert(ObterAssinaturaDoJogo() == v0)
+	end
+	console.log("Tudo certo.")
+end
+
+function nome()
+	local v0 = ObterAssinaturaDoJogo()
+	local v1 = {}
+	v1[1] = "Human Cannonball"
+	v1[2] = "Fun with Numbers"
+	v1[3] = "3-D Tic-Tac-Toe"
+	v1[4] = "Flag Capture"
+	v1[5] = "Othello"
+	v1[6] = "Golf"
+	v1[7] = ""
+end
+
+while true do
+	emu.frameadvance()
+end
